@@ -2,7 +2,8 @@
 
 * [fontend-note](README.md)
 
-## Nuxt
+## Vue
 
-* [Nuxt 源码体悟](nuxt/nuxt-yuan-ma-ti-wu.md)
+* [Vue-Loader Hot Reload](vue/vue-loader-hot-reload.md)
+* [Nuxt 源码体悟](vue/nuxt-yuan-ma-ti-wu.md)
 
