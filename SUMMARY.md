@@ -1,6 +1,6 @@
 # Table of contents
 
-* [fontend-note](README.md)
+* [前端随笔](README.md)
 
 ## Vue
 
