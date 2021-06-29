@@ -6,6 +6,8 @@
 - js
     - rxjs 
         - [rxjs 基本概念](./docs/16221950149151.md)
+- node
+    - [node 学习一](./docs/16249785029621.md)
 - vue 生态
     - nuxt
         - [nuxt源码阅读](./docs/16221949411992.md)
