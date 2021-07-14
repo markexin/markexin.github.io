@@ -10,6 +10,7 @@
 <b><details><summary>🐮 JS</summary></b>
 
 - [rxjs 基本概念](./docs/16221950149151.md)
+- [Typescript 指南](./docs/16261648578849.md)
 
 </details>
 
