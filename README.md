@@ -25,6 +25,7 @@
 
 - [nuxt源码阅读](./docs/16221949411992.md)
 - [vue-loader hot-reload](./docs/16221949411793.md)
+- [Composition API 异步问题](./docs/16275237956681.md)
 
 </details>
 
