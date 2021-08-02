@@ -52,6 +52,12 @@
 
 </details>
 
+<b><details open><summary>🐮 感悟杂文</summary></b>
+
+- [高效软件开发人员的 12 个习惯](./docs/16278833991926.md)
+
+</details>
+
 
 ![](.gitbook/assets/image%20%289%29.png)
 
