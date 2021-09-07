@@ -50,6 +50,7 @@
 <b><details open><summary>🐮 工程化</summary></b>
 
 - [微前端](./docs/16251044572596.md)
+- [Nginx-proxy_set_header](./docs/20210907.md)
 
 </details>
 
@@ -61,7 +62,6 @@
 
 
 ![](.gitbook/assets/image%20%289%29.png)
-
 
 
 
