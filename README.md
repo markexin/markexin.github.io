@@ -1,4 +1,4 @@
-# 前端学习-笔记本
+# 记事本
 
 ## 目录
 <b><details open><summary>🐮 CSS</summary></b>
@@ -51,6 +51,12 @@
 
 - [微前端](./docs/16251044572596.md)
 - [Nginx-proxy_set_header](./docs/20210907.md)
+
+</details>
+
+<b><details open><summary>🐮 JAVA</summary></b>
+
+- [基础数据结构](./docs/20210908.md)
 
 </details>
 
