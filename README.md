@@ -63,6 +63,7 @@
 <b><details open><summary>🐮 感悟杂文</summary></b>
 
 - [高效软件开发人员的 12 个习惯](./docs/16278833991926.md)
+- [ES2022 feature: class static initialization blocks](./docs/20210917.md)
 
 </details>
 
