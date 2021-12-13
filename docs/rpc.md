@@ -120,9 +120,9 @@ node client.js
 
 6. 打印结果
 
-![image-20211212220740992](/Users/maqun/Documents/fontend-note/docs/media/image-20211212220740992.png)
+![image-20211212220740992](./media/image-20211212220740992.png)
 
-![image-20211212220800393](/Users/maqun/Documents/fontend-note/docs/media/image-20211212220800393.png)
+![image-20211212220800393](./media/image-20211212220800393.png)
 
 
 
@@ -133,10 +133,10 @@ node client.js
 | 类型   | 含义    |
 | ------ | ------- |
 | bool   | Boolean |
-|        |         |
+| Byte   | Btye    |
 | i16    | Short   |
-| I32    |         |
-| I64    |         |
+| I32    | Int     |
+| I64    | Long    |
 | double | double  |
 | String | String  |
 | binary | Byte[]  |
@@ -213,5 +213,5 @@ package com.example.test
 
 ### 3 . gRPC 与 thrift 框架对比
 
-![image-20211212212828511](/Users/maqun/Documents/fontend-note/docs/media/image-20211212212828511.png)
+![image-20211212212828511](./media/image-20211212212828511.png)
 
