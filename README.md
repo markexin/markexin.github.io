@@ -19,6 +19,7 @@
 - [node 架构一览](./docs/16249785029621.md)
 - [node 模块加载](./docs/16251942644019.md)
 - [单例 Node.js 可以处理多少请求](./docs/16279534330189.md)
+- [thrift rpc ](./doc/rpc.md)
 
 </details>
 
@@ -44,6 +45,7 @@
 <b><details open><summary>🐮 性能优化</summary></b>
 
 - [webpack chunk 解密](./docs/16221948706253.md)
+- [前端性能优化指标](./docs/20211031.md)
 
 </details>
 
