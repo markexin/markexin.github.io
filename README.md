@@ -19,7 +19,7 @@
 - [node 架构一览](./docs/16249785029621.md)
 - [node 模块加载](./docs/16251942644019.md)
 - [单例 Node.js 可以处理多少请求](./docs/16279534330189.md)
-- [thrift rpc ](./doc/rpc.md)
+- [thrift rpc ](./docs/rpc.md)
 
 </details>
 
