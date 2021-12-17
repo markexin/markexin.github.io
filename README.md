@@ -26,6 +26,7 @@
 <b><details open><summary>🐮 Vue</summary></b>
 
 - [nuxt源码阅读](./docs/16221949411992.md)
+- [Nuxt 3 源码阅读](./docs/Nuxt3.md)
 - [vue-loader hot-reload](./docs/16221949411793.md)
 - [Composition API 异步问题](./docs/16275237956681.md)
 
