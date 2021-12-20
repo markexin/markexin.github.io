@@ -39,7 +39,7 @@
 
 <b><details open><summary>🐮 浏览器</summary></b>
 
-- service worker
+- [http2](./docs/http2.md)
 
 </details>
 
