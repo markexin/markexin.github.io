@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="不忘初心，努力前行"><title>RPC框架  - Thrift | Markexin</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 6.0.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">RPC框架  - Thrift</h1><a id="logo" href="/.">Markexin</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> Home</i></a><a href="/archives/"><i class="fa fa-archive"> Archive</i></a><a href="/about/"><i class="fa fa-user"> About</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">RPC框架  - Thrift</h1><div class="post-meta">2021-12-12</div><div class="post-content"><h2 id="RPC框架-Thrift"><a href="#RPC框架-Thrift" class="headerlink" title="RPC框架  - Thrift"></a>RPC框架  - Thrift</h2><h3 id="一-Thrift-安装"><a href="#一-Thrift-安装" class="headerlink" title="一.  Thrift 安装"></a>一.  Thrift 安装</h3><ol>
+<li>安装thrift</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 主要还是针对 linux 和 macOS系统</span></span><br><span class="line">brew install thrift</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>编写一个 IDL 文件</li>
+</ol>
+<figure class="highlight thrift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">TAccountRpcDTO</span> </span>&#123;</span><br><span class="line">    <span class="number">1</span>: <span class="built_in">i64</span> uid,</span><br><span class="line">    <span class="number">2</span>: <span class="built_in">string</span> name,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">service</span> <span class="title">TAccountService</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 创建一个账号</span></span><br><span class="line">    <span class="keyword">void</span> createAccount(<span class="number">1</span>: TAccountRpcDTO tAccountRpcDTO);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取某个账号</span></span><br><span class="line">    TAccountRpcDTO getAccount(<span class="number">1</span>: <span class="built_in">i64</span> uid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>创建server端</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> thrift = <span class="built_in">require</span>(<span class="string">&#x27;thrift&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 引入生成的struct和service方法</span></span><br><span class="line"><span class="keyword">const</span> TAccountService = <span class="built_in">require</span>(<span class="string">&#x27;./gen-nodejs/TAccountService&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 模拟数据库，本地创建一个对象，用作存储account</span></span><br><span class="line"><span class="keyword">const</span> accounts = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 开启rpc server</span></span><br><span class="line"><span class="keyword">const</span> server = thrift.createServer(TAccountService, &#123;</span><br><span class="line">	<span class="function"><span class="title">createAccount</span>(<span class="params">account, result</span>)</span> &#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">&#x27;server createAccount:&#x27;</span>, account.uid);</span><br><span class="line"></span><br><span class="line">		accounts[account.uid] = account;</span><br><span class="line">		result(<span class="literal">null</span>);</span><br><span class="line">	&#125;,</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="title">getAccount</span>(<span class="params">uid, result</span>)</span> &#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">&#x27;server getAccount:&#x27;</span>, uid);</span><br><span class="line"></span><br><span class="line">		result(<span class="literal">null</span>, accounts[uid]);</span><br><span class="line">	&#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 监听3030端口</span></span><br><span class="line">server.listen(<span class="number">3030</span>);</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>创建client</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> thrift = require(<span class="string">&#x27;thrift&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 引入生成的struct和service方法</span></span><br><span class="line"><span class="keyword">const</span> TAccountService = require(<span class="string">&#x27;./gen-nodejs/TAccountService&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> TAccountTypes = require(<span class="string">&#x27;./gen-nodejs/hello_types&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 建立连接和初始化client</span></span><br><span class="line"><span class="keyword">const</span> connection = thrift.createConnection(<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">3030</span>, &#123;</span><br><span class="line">    connect_timeout: <span class="number">100</span>,</span><br><span class="line">    max_attempts: <span class="number">2</span> </span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> client = thrift.createClient(TAccountService, connection);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义一个新的accountDto对象，用作测试</span></span><br><span class="line"><span class="keyword">const</span> account = <span class="keyword">new</span> TAccountTypes.TAccountRpcDTO(&#123;</span><br><span class="line">	uid: <span class="number">1</span>,</span><br><span class="line">	name: <span class="string">&#x27;Hello World&#x27;</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 监听error事件，node的NodeJS.EventEmitter类的on方法</span></span><br><span class="line">connection.on(<span class="string">&#x27;error&#x27;</span>, err =&gt; &#123;</span><br><span class="line">	console.error(err);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用server端的createAccount方法</span></span><br><span class="line">client.createAccount(account, err =&gt; &#123;</span><br><span class="line">	<span class="keyword">if</span> (err) &#123;</span><br><span class="line">		console.error(err);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	console.log(<span class="string">&#x27;client createAccount:&#x27;</span>, account.uid);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 获取刚刚”新建“的account</span></span><br><span class="line">	client.getAccount(account.uid, (err, resp) =&gt; &#123;</span><br><span class="line">		<span class="keyword">if</span> (err) &#123;</span><br><span class="line">			console.error(err);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		console.log(`client getAccount: uid=$&#123;resp.uid&#125;, name=$&#123;resp.name&#125;`);</span><br><span class="line">		connection.end();</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>启动服务</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">node server.js</span><br><span class="line"><span class="comment"># 启动客户端</span></span><br><span class="line">node client.js</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>打印结果</li>
+</ol>
+<p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxso2130axj31m20ji426.jpg" alt="image-20211227203145631"></p>
+<h3 id="二-IDL-编写"><a href="#二-IDL-编写" class="headerlink" title="二. IDL 编写"></a>二. IDL 编写</h3><ol>
+<li>基本类型</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bool</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>Byte</td>
+<td>Btye</td>
+</tr>
+<tr>
+<td>i16</td>
+<td>Short</td>
+</tr>
+<tr>
+<td>I32</td>
+<td>Int</td>
+</tr>
+<tr>
+<td>I64</td>
+<td>Long</td>
+</tr>
+<tr>
+<td>double</td>
+<td>double</td>
+</tr>
+<tr>
+<td>String</td>
+<td>String</td>
+</tr>
+<tr>
+<td>binary</td>
+<td>Byte[]</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>struct 结构体</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct User &#123;</span><br><span class="line">  <span class="number">1</span>: required string name, <span class="comment">//改字段必须填写</span></span><br><span class="line">  <span class="number">2</span>: optional i32 age = <span class="number">0</span>; <span class="comment">//默认值</span></span><br><span class="line">  <span class="number">3</span>: bool gender <span class="comment">//默认字段类型为optional</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>struct不能继承，但是可以嵌套，不能嵌套自己。</li>
+<li>其成员都是有明确类型</li>
+<li>成员是被正整数编号过的，其中的编号使不能重复的，这个是为了在传输过程中编码使用。</li>
+<li>成员分割符可以是逗号（,）或是分号（;），而且可以混用</li>
+<li>字段会有optional和required之分和protobuf一样，但是如果不指定则为无类型–可以不填充该值，但是在序列化传输的时候也会序列化进去，optional是不填充则部序列化，required是必须填充也必须序列化。</li>
+<li>每个字段可以设置默认值</li>
+<li>同一文件可以定义多个struct，也可以定义在不同的文件，进行include引入。</li>
+</ul>
+<ol start="3">
+<li><p>Container 容器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct Test &#123;</span><br><span class="line">  <span class="number">1</span>: map&lt;string, User&gt; usermap,</span><br><span class="line">  <span class="number">2</span>: set&lt;i32&gt; intset,</span><br><span class="line">  <span class="number">3</span>: list&lt;<span class="keyword">double</span>&gt; doublelist</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>list: 元素类型为t的有序表，容许元素重复。对应c++的vector，java的ArrayList或javascript的数组</li>
+<li>set: 元素类型为t的无序表，不容许元素重复。对应c++中的set，java中的HashSet,python中的set，php中没有set，则转换为list类型了</li>
+<li>map&lt;t, t&gt;: 键类型为t，值类型为t的kv对，键不容许重复。对用c++中的map, Java的HashMap, PHP 对应 array, Python/Ruby 的dictionary</li>
+</ul>
+</li>
+<li><p>Enum 枚举</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">HttpStatus</span> </span>&#123;</span><br><span class="line">  OK = <span class="number">200</span>,</span><br><span class="line">  NOTFOUND=<span class="number">404</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>编译器默认从0开始赋值</li>
+<li>可以赋予某个常量某个整数</li>
+<li>允许常量是十六进制整数</li>
+<li>末尾没有分号</li>
+<li>给常量赋缺省值时，使用常量的全称</li>
+</ul>
+</li>
+<li><p>Service 服务定义类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">service HelloService &#123;</span><br><span class="line">    <span class="function">i32 <span class="title">sayInt</span><span class="params">(<span class="number">1</span>:i32 param)</span></span></span><br><span class="line"><span class="function">    string <span class="title">sayString</span><span class="params">(<span class="number">1</span>:string param)</span></span></span><br><span class="line"><span class="function">    bool <span class="title">sayBoolean</span><span class="params">(<span class="number">1</span>:bool param)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">void</span> <span class="title">sayVoid</span><span class="params">()</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>Namespace (名字空间)</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">namespace java com.example.test</span><br><span class="line"><span class="comment">// 转义后</span></span><br><span class="line"><span class="keyword">package</span> com.example.test</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-gRPC-与-thrift-框架对比"><a href="#3-gRPC-与-thrift-框架对比" class="headerlink" title="3 . gRPC 与 thrift 框架对比"></a>3 . gRPC 与 thrift 框架对比</h3><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxso2btb2sj31fq0u0n06.jpg" alt="image-20211227203202798"></p>
+<p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxso2g67iuj31ne0kkn0m.jpg" alt="image-20211227203210073"></p>
+</div><div class="tags"><a href="/tags/node/"><i class="fa fa-tag"></i>node</a></div><div class="post-nav"><a class="pre" href="/2021/12/17/http2/">HTTP/2 知识点梳理</a><a class="next" href="/2021/12/09/Nuxt3/">Nuxt 3 概述</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://example.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> Tags</i></div><div class="tagcloud"><a href="/tags/vue/" style="font-size: 15px;">vue</a> <a href="/tags/%E8%B6%A3%E5%91%B3%E6%9D%82%E8%B0%88/" style="font-size: 15px;">趣味杂谈</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/node/" style="font-size: 15px;">node</a> <a href="/tags/react/" style="font-size: 15px;">react</a> <a href="/tags/js/" style="font-size: 15px;">js</a> <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" style="font-size: 15px;">性能优化</a> <a href="/tags/css/" style="font-size: 15px;">css</a> <a href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8/" style="font-size: 15px;">浏览器</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 15px;">运维</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> Recent</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021/12/21/ServiceWorker/">Service Worker</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/12/17/http2/">HTTP/2 知识点梳理</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/12/12/rpc/">RPC框架  - Thrift</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/12/09/Nuxt3/">Nuxt 3 概述</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/09/17/ES2022%20feature:%20class%20static%20initialization%20blocks/">ES2022 feature class static initialization blocks</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/09/08/JAVA%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">JAVA 数据结构</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/09/07/proxy_set_header/">Nginx爬坑之旅 proxy_set_header</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/08/03/%E5%8D%95%E4%BE%8B%20Node.js%20%E5%8F%AF%E4%BB%A5%E5%A4%84%E7%90%86%E5%A4%9A%E5%B0%91%E8%AF%B7%E6%B1%82/">单例 Node.js 可以处理多少请求</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/08/02/%E9%AB%98%E6%95%88%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E4%BA%BA%E5%91%98%E7%9A%84%2012%20%E4%B8%AA%E4%B9%A0%E6%83%AF/">高效软件开发人员的 12 个习惯</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/07/29/Composition%20API%20%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/">Composition API 异步问题</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> Links</i></div><ul></ul><a href="https://github.com/jiajianrong/documents" title="jiajianrong" target="_blank">jiajianrong</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2021 <a href="/." rel="nofollow">Markexin.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/js/copycode.js" successtext="Copy Successed!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>
