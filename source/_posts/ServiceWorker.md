@@ -66,3 +66,97 @@ PWA / Service Worker / WorkBox 虽然相互之间有着千丝万缕的联系，�
 Workbox 是一组库，可以为 Progressive Web App 提供生产就绪的 Service Worker。
 
 ![image-20211222202841855](https://tva1.sinaimg.cn/large/008i3skNly1gxmvvbunp3j31l40kmq4o.jpg)
+
+
+
+### 2. 构建 service worker
+
+
+
+#### 2.1 页面创建定义 sw
+
+
+
+说明： 由于我们构建的应用可能是多页面的，每一个工程都可能会存在service worker，为防止 service worker 爆炸，我们在定义之初最好定义作用范围。
+
+```javascript
+if ('serviceWorker' in navigator) {
+       navigator.serviceWorker.register('/sw.js', { 
+         scope: '/' 
+       }).then(function(swReg) {
+				// 此处编写加载sw之后的逻辑
+       }).catch(function(error) {
+       // registration failed
+       console.log('Registration failed with ' + error);
+     });
+}
+```
+
+
+
+#### 2.2 定义规则规则
+
+```javascript
+// 注册成功后要立即缓存的资源列表
+workbox.precaching.precache([
+  'https://avatars.githubusercontent.com/iceprosurface'
+]);
+
+// html的缓存策略
+workbox.routing.registerRoute(
+  '/(.*?)\/$',
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'index',
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxAgeSeconds: 7 * 24 * 60 * 60,
+      }),
+    ],
+  }),
+)
+
+// html的缓存策略
+workbox.routing.registerRoute(
+  new RegExp('.*.html'),
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'html-main',
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 20,
+        maxAgeSeconds: 7 * 24 * 60 * 60,
+      }),
+    ],
+  }),
+)
+
+workbox.routing.registerRoute(
+  new RegExp('.*.(js|css)'),
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'icepro-resource',
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 20,
+        maxAgeSeconds: 7 * 24 * 60 * 60,
+      }),
+    ],
+  }),
+)
+
+workbox.routing.registerRoute(
+  new RegExp('https://icepro.oss-cn-shanghai.aliyuncs.com/'),
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'image-oss',
+  }),
+)
+```
+
+
+
+#### 2.3 效果展示
+
+![image-20211228130607493](https://tva1.sinaimg.cn/large/008i3skNly1gxtgsnoecnj30i009ymy2.jpg)
+
+
+
+![image-20211228130702137](https://tva1.sinaimg.cn/large/008i3skNly1gxtgtlep4rj31qe0smwjm.jpg)
+
