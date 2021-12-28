@@ -1,0 +1,26 @@
+---
+title: React hooks API
+tags: react
+---
+
+# React hooks API
+
+### 基础 Hook
+
+- useState
+- useEffect
+- useContext
+
+### 额外的 Hook
+
+- useReducer
+- useCallback
+- useMemo
+- useRef
+- useImperativeHandle
+- useLayoutEffect
+- useDebugValue
+
+### 调用example
+
+<iframe src="https://codesandbox.io/s/naughty-cherry-3ec6k?file=/src/App.js" width="100%" height="600px" />

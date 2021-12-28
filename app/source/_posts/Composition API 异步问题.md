@@ -1,0 +1,224 @@
+---
+title: Composition API 异步问题
+tags: vue
+---
+
+# Composition API 异步问题
+
+> 原文： https://antfu.me/posts/async-with-composition-api
+
+在 Vue Composition API 中使用异步函数时有一个主要警告，我相信你们很多人都遇到过。接下来我整理可能的解决方案的同时进行详细说明。
+
+- 问题
+- 原理
+- 局限性
+- 解决办法
+
+## 问题
+当使用异步 `step()` 的时候，你必须在第一个 await 语句之前使用`effects`和`lifecycle hooks`挂钩。
+
+示例代码：
+```javascript
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+export default defineAsyncComponent({
+    async step() {
+        const counter = ref(0);
+        watch(counter, () => console.log(counter.value))
+        // OK!
+        onMounted(() => console.log('Mounted'))
+        // the await statement
+        await someAsyncFunction() // <-----------
+        // does NOT work!
+        onUnmounted(() => console.log('Unmounted'))
+        // 依旧工作，但是不自动处理
+        // 在组件destory之后，造成内存泄漏
+        watch(counter, () => console.log(counter.value * 2))
+    }
+})
+```
+在 await 语句之后, 以下功能将受到限制（不能自动处理）：
+
+- watch / watchEffect
+- computed
+- effect
+
+下面的 functions 将不能工作：
+
+- onMounted / onUnmounted / onXXX
+- provide / inject
+- getCurrentInstance
+
+## 原理
+让我们以 `onMounted` API 作为例子，众所周知，`onMounted` 当前组件加载的时候，是一个注册监听者的一个hook。注意 `onMounted` 是一个全局的API。你可以在任何地方调用他。没有局部上下文限制。
+
+举例：
+```javascript
+// local: `onMounted` is a method of `component` that bound to it
+component.onMounted(/* ... */)
+
+// global: `onMounted` can be called without context
+onMounted(/* ... */)
+```
+
+那么，`onMounted` 是如何知道组件已经加载完成的呢？
+
+Vue 采用了一种有趣的方法来解决这个问题。它使用一个内部变量来记录当前的组件实例。Vue 挂载组件时，它将实例存储在一个全局变量中，当在 setup 函数中调用钩子时，它将使用全局变量来获取当前组件实例。
+
+```javascript
+let currentInstance = null
+
+export function mountComponent(component) {
+  const instance = createComponent(component)
+
+  // hold the previous instance
+  const prev = currentInstance
+
+  // set the instance to global
+  currentInstance = instance
+
+  // hooks called inside the `setup()` will have
+  // the `currentInstance` as the context
+  component.setup() 
+
+  // restore the previous instance
+  currentInstance = prev 
+}
+```
+一个简单的 `onMounted` 实现如下：
+```javascript
+// (pseudo code)
+export function onMounted(fn) {
+  if (!currentInstance) {
+    warn(`"onMounted" can't be called outside of component setup()`)
+    return
+  }
+
+  // bound listener to the current instance
+  currentInstance.onMounted(fn)
+}
+```
+通过上述的方法，只要 `onMounted` 在components内部`step()`方法中调用，它将能够获取当前组件的实例。
+
+## 局限性
+到目前为止一切顺利，但是异步函数有什么问题？
+
+JavaScript 是单线程的。单线程确保以下语句将彼此相邻执行。换句话说，没有人会意外地同时修改 currentInstance。举例如下:
+```javascript
+currentInstance = instance
+component.setup() 
+currentInstance = prev 
+```
+但是当你 setup() 异步时情况发生变化，每当你 await一个promise的时候，你可以认为引擎在这里暂停工作并去做另一项任务。在这个时间段内，多个组件的创建将不可预测地改变全局变量并最终变得一团糟。举例如下：
+```javascript
+currentInstance = instance
+await component.setup() // atomic lost
+currentInstance = prev 
+```
+如果我们不使用await来检查实例，调用setup()函数会使它在第一条await语句之前完成任务，只要await语句解析完成，剩下的就会执行.
+```javascript
+async function setup() {
+  console.log(1)
+  await someAsyncFunction()
+  console.log(2)
+}
+
+console.log(3)
+setup()
+console.log(4)
+// 3 - 1 - 4 - 2;
+```
+这意味着，Vue 无法知道何时会从外部调用异步部分，因此也无法将实例绑定到上下文。
+
+## 解决办法
+
+这实际上是 JavaScript 本身的一个限制，除非我们有一些新的提议在语言层面打开大门，否则我们必须接受它。但是为了解决这个问题，我收集了一些解决方案供您根据需要进行选择。
+
+### 1. 开发时有效提醒
+
+当然，这是一个明显的“解决方案”。您可以尝试在第一个 await 语句之前移动您的效果和钩子，并小心记住不要在此之后再次使用它们。幸运的是，如果您使用 ESLint，您可以启用 eslint-plugin-vue 中的 vue/no-watch-after-await 和 vue/no-lifecycle-after-await 规则，以便在您犯一些错误时发出警告。
+
+### 2. 将异步函数包装为同步
+在某些情况下，您的逻辑可能依赖于异步获取的数据。
+```javascript
+const data = await fetch('https://api.github.com/').then(r => r.json())
+const user = data.user
+```
+```javascript
+const data = ref(null)
+fetch('https://api.github.com/')
+  .then(r => r.json())
+  .then(res => data.value = res)
+const user = computed(() => data?.user)
+```
+这种方法首先解决逻辑之间的“连接”，然后在异步函数得到解决并填充数据时进行反应更新。
+### 3. 显式绑定实例
+生命周期钩子实际上接受第二个参数来显式设置实例。但是，缺点是此解决方案不适用于 watch/watchEffect/computed/provide/inject，因为它们不接受实例参数。
+```javascript
+export default defineAsyncComponent({
+  async setup() {
+    // get and hold the instance before `await`
+    const instance = getCurrentInstance()
+
+    await someAsyncFunction() // <-----------
+
+    onUnmounted(
+      () => console.log('Unmounted'),
+      instance // <--- pass the instance to it
+    )
+  }
+})
+```
+要获得效果，您可以在即将发布的 Vue 中使用 effectScope API.
+```javascript
+import { effectScope } from 'vue'
+
+export default defineAsyncComponent({
+  async setup() {
+    // create the scope before `await`, so it will be bond to the instance
+    const scope = effectScope()
+
+    const data = await someAsyncFunction() // <-----------
+
+    scope.run(() => {
+      /* Use `computed`, `watch`, etc. ... */
+    })
+
+    // the lifecycle hooks will not be available here,
+    // you will need to combine it with the previous snippet
+    // to have both lifecycle hooks and effects works.
+  }
+})
+```
+
+### 4. 编译时魔法
+
+在最近的 `<script setup>` 提案更新中，引入了新的编译时魔法。它的工作方式是在每个 await 语句之后注入一个脚本来恢复当前实例状态。
+
+```javascript
+<script setup>
+const post = await fetch(`/api/post/1`).then((r) => r.json())
+</script>
+```
+```javascript
+import { withAsyncContext } from 'vue'
+
+export default {
+  async setup() {
+    let __temp, __restore
+
+    const post =
+      (([__temp, __restore] = withAsyncContext(() =>
+        fetch(`/api/post/1`).then((r) => r.json())
+      )),
+      (__temp = await __temp),
+      __restore(),
+      __temp)
+
+    // current instance context preserved
+    // e.g. onMounted() will still work.
+
+    return { post }
+  }
+}
+```
+有了它，异步函数将在与 `<script setup>` 一起使用时才起作用。唯一的遗憾是它在 `<script setup>` 之外不起作用。

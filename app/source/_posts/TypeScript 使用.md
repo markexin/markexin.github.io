@@ -1,0 +1,163 @@
+---
+title: TypeScript 使用
+tags: js
+---
+
+# TypeScript 使用
+
+### 数组
+```javscript
+type arrT = number[]
+type arrT = Array<number>
+const arr: arrT = [1,2,3];
+```
+### string number boolean
+```javascript
+const a: string = "1"
+const a: number = 1
+const a: boolean = false
+```
+### 函数参数 & 返回值
+```javascript
+function greet(name: string): void {}
+```
+### 对象
+```javascript
+function printCoord(pt: { x: number; y: number }) {
+  console.log("The coordinate's x value is " + pt.x);
+  console.log("The coordinate's y value is " + pt.y);
+}
+
+// 可选属性
+function printName(obj: { first: string; last?: string }) {
+  // ...
+}
+```
+### 联合类型
+```javascript
+function printId(id: number | string) {
+  console.log("Your ID is: " + id);
+}
+// OK
+printId(101);
+// OK
+printId("202");
+// Error
+printId({ myID: 22342 });
+```
+### 接口
+```javascript
+interface Point {
+  x: number;
+  y: number;
+}
+
+function printCoord(pt: Point) {
+  console.log("The coordinate's x value is " + pt.x);
+  console.log("The coordinate's y value is " + pt.y);
+}
+
+printCoord({ x: 100, y: 100 });
+```
+### 类型别名
+```javascript
+type UserInputSanitizedString = string;
+
+function sanitizeInput(str: string): UserInputSanitizedString {
+  return sanitize(str);
+}
+```
+
+**别名：在于不能重新打开类型**
+
+**接口：可以添加​​新属性并且始终可扩展**
+
+### 类型断言
+```javascript
+const myCanvas = document.getElementById("main_canvas") as HTMLCanvasElement;
+```
+
+### null & undefined
+
+* `strictNullChecks` === off 可以null或undefined仍然可以正常访问的值。
+* `strictNullChecks` === on 当值为null or undefined，您需要在对该值使用方法或属性之前测试这些值。
+
+### 非空断言
+```javascript
+function liveDangerously(x?: number | null) {
+  console.log(x!.toFixed());
+}
+```
+### typeof 类型守卫
+```javascript
+function printAll(strs: string | string[] | null) {
+  if (typeof strs === "object") {
+    for (const s of strs) {
+      console.log(s);
+    }
+  } else if (typeof strs === "string") {
+    console.log(strs);
+  } else {
+    // do nothing
+  }
+}
+```
+### 类型谓词
+```javascript
+function isFish(pet: Fish | Bird): pet is Fish {
+  return (pet as Fish).swim !== undefined;
+}
+```
+### keyof
+```javascript
+type Person = {
+  name: string;
+  age: number;
+}
+type PersonKey = keyof Person;  // PersonKey得到的类型为 'name' | 'age'
+```
+### 泛型工具
+#### 1. 将泛型中全部属性变为可选的
+```javascript
+type Partial<T> = {
+    [P in keyof T]?: T[P]
+}
+```
+#### 2. 将 K 中所有属性值转化为 T 类型，我们常用它来申明一个普通 object 对象
+```javascript
+type Record<K extends keyof any, T> = {
+    [key in K]: T
+}
+```
+#### 3. 将 T 类型中的 K 键列表提取出来，生成新的子键值对类型
+```javascript
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P]
+}
+```
+#### 4. 在 T 类型中，去除 T 类型和 U 类型的交集，返回剩余的部分
+```javascript
+type Exclude<T, U> = T extends U ? never : T
+```
+#### 5. 适用于键值对对象的 Exclude，它会去除类型 T 中包含 K 的键值对
+```javascript
+// Exclude<keyof T, K> 返回的是 T/K 之间的交集
+// 并把不是交集的部分提取出来
+type Omit = Pick<T, Exclude<keyof T, K>>
+```
+#### 6. 此工具就是获取 T 类型(函数)对应的返回值类型
+```javascript
+// infer 推断返回值类型
+type ReturnType<T extends (...args: any) => any>
+  = T extends (...args: any) => infer R ? R : any;
+// 举例
+function foo(x: string | number): string | number { /*..*/ }
+type FooType = ReturnType<foo>;  // string | number
+```
+#### 7. 将类型 T 中所有的属性变为必选项
+```javascript
+// -? 理解为就是 TS 中把?可选属性减去的意思
+type Required<T> = {
+  [P in keyof T]-?: T[P]
+}
+```
