@@ -9,9 +9,9 @@
 
 <h3>AI</h3>
 
-- [UI自动化测试](https://github.com/markexin/markexin.github.io/issues/2)
+- [Midjourney Prompts 整理](https://github.com/markexin/markexin.github.io/issues/2)
 
 <h3>算法</h3>
 
-- [UI自动化测试](https://github.com/markexin/markexin.github.io/issues/3)
+- [二分查找](https://github.com/markexin/markexin.github.io/issues/3)
 
